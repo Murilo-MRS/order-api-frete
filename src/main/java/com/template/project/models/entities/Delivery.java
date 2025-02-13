@@ -40,14 +40,12 @@ public class Delivery {
       Long id,
       String description,
       LocalDateTime deliveryDate,
-      DeliveryStatus status,
-      User user
+      DeliveryStatus status
   ) {
     this.id = id;
     this.description = description;
     this.deliveryDate = deliveryDate;
     this.status = status;
-    this.user = user;
   }
 
   public Long getId() {
