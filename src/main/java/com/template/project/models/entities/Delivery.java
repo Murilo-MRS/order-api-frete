@@ -32,4 +32,61 @@ public class Delivery {
   @ManyToOne
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
+
+  public Delivery() {
+  }
+
+  public Delivery(
+      Long id,
+      String description,
+      LocalDateTime deliveryDate,
+      DeliveryStatus status,
+      User user
+  ) {
+    this.id = id;
+    this.description = description;
+    this.deliveryDate = deliveryDate;
+    this.status = status;
+    this.user = user;
+  }
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public LocalDateTime getDeliveryDate() {
+    return deliveryDate;
+  }
+
+  public void setDeliveryDate(LocalDateTime deliveryDate) {
+    this.deliveryDate = deliveryDate;
+  }
+
+  public DeliveryStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(DeliveryStatus status) {
+    this.status = status;
+  }
+
+  public User getUser() {
+    return user;
+  }
+
+  public void setUser(User user) {
+    this.user = user;
+  }
 }
