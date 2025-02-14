@@ -1,9 +1,12 @@
 package com.template.project.service.impl;
 
+import com.template.project.exceptions.UserAlreadyExistsException;
+import com.template.project.exceptions.UserNotFoundException;
 import com.template.project.models.entities.User;
 import com.template.project.models.repositories.UserRepository;
 import com.template.project.service.UserService;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,32 +20,62 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public User findById(Long id) {
-    return null;
+  public User findById(Long id) throws UserNotFoundException {
+    Optional<User> user = userRepository.findById(id);
+    if (!user.isPresent()) {
+      throw new UserNotFoundException();
+    }
+
+    return user.get();
   }
 
   @Override
-  public User findByEmail(String email) {
-    return null;
+  public User findByEmail(String email) throws UserNotFoundException {
+    Optional<User> user = userRepository.findByEmail(email);
+    if (!user.isPresent()) {
+      throw new UserNotFoundException();
+    }
+
+    return user.get();
   }
 
   @Override
   public List<User> getAll() {
-    return List.of();
+    return userRepository.findAll();
   }
 
   @Override
-  public User create(User user) {
-    return null;
+  public User create(User user) throws UserAlreadyExistsException {
+    Optional<User> userFromDatabase = userRepository.findByEmail(user.getEmail());
+    if (userFromDatabase.isPresent()) {
+      throw new UserAlreadyExistsException();
+    }
+    return userRepository.save(user);
   }
 
   @Override
-  public User update(User user) {
-    return null;
+  public User update(Long id, User user) throws UserNotFoundException {
+    Optional<User> userFromDatabase = userRepository.findById(id);
+    if (!userFromDatabase.isPresent()) {
+      throw new UserNotFoundException();
+    }
+
+    User userToUpdate = userFromDatabase.get();
+
+    userToUpdate.setName(user.getName());
+    userToUpdate.setEmail(user.getEmail());
+    userToUpdate.setPassword(user.getPassword());
+    userToUpdate.setRole(user.getRole());
+
+    return userRepository.save(userToUpdate);
   }
 
   @Override
-  public void delete(Long id) {
-
+  public void delete(Long id) throws UserNotFoundException {
+    Optional<User> userFromDatabase = userRepository.findById(id);
+    if (!userFromDatabase.isPresent()) {
+      throw new UserNotFoundException();
+    }
+    userRepository.deleteById(id);
   }
 }
