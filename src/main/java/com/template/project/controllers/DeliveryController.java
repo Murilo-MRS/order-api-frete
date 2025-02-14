@@ -1,10 +1,10 @@
-package com.template.project.controllers.impl;
+package com.template.project.controllers;
 
 import com.template.project.exceptions.DeliveryNotFoundException;
 import com.template.project.models.dtos.DeliveryCreationDto;
 import com.template.project.models.dtos.DeliveryDto;
+import com.template.project.models.dtos.DeliveryUpdateStatusDto;
 import com.template.project.models.entities.Delivery;
-import com.template.project.models.enums.DeliveryStatus;
 import com.template.project.service.DeliveryService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,17 +54,19 @@ public class DeliveryController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<DeliveryDto> updateDelivery(@PathVariable Long id, @RequestBody DeliveryCreationDto deliveryUpdateDto) {
-    Delivery updatedDelivery = deliveryService.update(deliveryUpdateDto.toEntity());
+  public ResponseEntity<DeliveryDto> updateDelivery(@PathVariable Long id, @RequestBody DeliveryCreationDto deliveryUpdateDto)
+      throws DeliveryNotFoundException {
+    Delivery updatedDelivery = deliveryService.update(id, deliveryUpdateDto.toEntity());
     DeliveryDto updatedDeliveryDto = DeliveryDto.fromEntity(updatedDelivery);
 
     return ResponseEntity.ok(updatedDeliveryDto);
   }
 
   @PutMapping("/{id}/status")
-  public ResponseEntity<DeliveryDto> updateDeliveryStatus(@PathVariable Long id, @RequestBody DeliveryStatus status)
+  public ResponseEntity<DeliveryDto> updateDeliveryStatus(@PathVariable Long id,
+      @RequestBody DeliveryUpdateStatusDto updateStatusDto)
       throws DeliveryNotFoundException {
-    Delivery updatedDelivery = deliveryService.updateStatus(id, status);
+    Delivery updatedDelivery = deliveryService.updateDeliveryStatus(id, updateStatusDto.status());
     DeliveryDto updatedDeliveryDto = DeliveryDto.fromEntity(updatedDelivery);
 
     return ResponseEntity.ok(updatedDeliveryDto);
