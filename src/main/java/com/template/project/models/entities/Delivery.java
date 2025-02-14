@@ -2,6 +2,7 @@ package com.template.project.models.entities;
 
 import com.template.project.models.enums.DeliveryStatus;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -12,6 +13,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity
 @Table(name = "deliveries")
@@ -30,8 +33,14 @@ public class Delivery {
   private DeliveryStatus status = DeliveryStatus.PENDING;
 
   @ManyToOne
-  @JoinColumn(name = "user_id", nullable = false)
+  @JoinColumn(name = "user_id")
   private User user;
+
+  @CreatedDate
+  private LocalDateTime createdAt;
+
+  @LastModifiedDate
+  private LocalDateTime updatedAt;
 
   public Delivery() {
   }
@@ -86,5 +95,13 @@ public class Delivery {
 
   public void setUser(User user) {
     this.user = user;
+  }
+
+  public LocalDateTime getCreatedAt() {
+    return createdAt;
+  }
+
+  public LocalDateTime getUpdatedAt() {
+    return updatedAt;
   }
 }
