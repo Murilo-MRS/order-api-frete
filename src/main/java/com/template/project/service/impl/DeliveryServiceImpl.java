@@ -1,10 +1,11 @@
 package com.template.project.service.impl;
 
 import com.template.project.exceptions.DeliveryNotFoundException;
+import com.template.project.exceptions.UserNotFoundException;
 import com.template.project.models.entities.Delivery;
+import com.template.project.models.entities.User;
 import com.template.project.models.enums.DeliveryStatus;
 import com.template.project.models.repositories.DeliveryRepository;
-import com.template.project.models.repositories.UserRepository;
 import com.template.project.service.DeliveryService;
 import com.template.project.service.UserService;
 import java.time.LocalDateTime;
@@ -16,17 +17,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class DeliveryServiceImpl implements DeliveryService {
   private final DeliveryRepository deliveryRepository;
-  private final UserRepository userRepository;
+  private final UserService userService;
 
   @Autowired
-  public DeliveryServiceImpl(DeliveryRepository deliveryRepository, UserRepository userRepository) {
+  public DeliveryServiceImpl(DeliveryRepository deliveryRepository, UserService userService) {
     this.deliveryRepository = deliveryRepository;
-    this.userRepository = userRepository;
-  }
-
-  @Override
-  public Delivery create(Delivery delivery) {
-    return null;
+    this.userService = userService;
   }
 
   @Override
@@ -42,17 +38,35 @@ public class DeliveryServiceImpl implements DeliveryService {
 
   @Override
   public List<Delivery> getAll() {
-    return List.of();
+    List<Delivery> deliveries = deliveryRepository.findAll();
+    return deliveries;
   }
 
   @Override
-  public Delivery update(Long id, Delivery delivery) throws DeliveryNotFoundException {
+  public Delivery create(Delivery delivery) {
+    delivery.setUser(null);
+    return deliveryRepository.save(delivery);
+  }
+
+  @Override
+  public Delivery update(Long id, Long userId, Delivery delivery)
+      throws DeliveryNotFoundException, UserNotFoundException {
     Delivery dataBaseDelivery = findById(id);
+    if (userId == null) {
+      dataBaseDelivery.setStatus(delivery.getStatus());
+      dataBaseDelivery.setDeliveryDate(delivery.getDeliveryDate());
+      dataBaseDelivery.setDescription(delivery.getDescription());
+      dataBaseDelivery.setUser(null);
+
+      return deliveryRepository.save(dataBaseDelivery);
+    }
+
+    User dataBaseUser = userService.findById(userId);
 
     dataBaseDelivery.setStatus(delivery.getStatus());
     dataBaseDelivery.setDeliveryDate(delivery.getDeliveryDate());
     dataBaseDelivery.setDescription(delivery.getDescription());
-    dataBaseDelivery.setUser(delivery.getUser());
+    dataBaseDelivery.setUser(dataBaseUser);
 
     return deliveryRepository.save(dataBaseDelivery);
   }
