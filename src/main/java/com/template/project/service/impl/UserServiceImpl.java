@@ -8,10 +8,14 @@ import com.template.project.service.UserService;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService, UserDetailsService {
   private final UserRepository userRepository;
 
   @Autowired
@@ -50,6 +54,9 @@ public class UserServiceImpl implements UserService {
     if (userFromDatabase.isPresent()) {
       throw new UserAlreadyExistsException();
     }
+    String hashedPassword = new BCryptPasswordEncoder()
+        .encode(user.getPassword());
+    user.setPassword(hashedPassword);
     return userRepository.save(user);
   }
 
@@ -78,5 +85,12 @@ public class UserServiceImpl implements UserService {
       throw new UserNotFoundException();
     }
     userRepository.deleteById(id);
+  }
+
+  @Override
+  public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    return userRepository.findByEmail(email)
+        .orElseThrow(() -> new UsernameNotFoundException(email));
+
   }
 }
