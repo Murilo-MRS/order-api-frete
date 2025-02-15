@@ -4,8 +4,10 @@ import com.template.project.exceptions.UserAlreadyExistsException;
 import com.template.project.exceptions.UserNotFoundException;
 import com.template.project.models.dtos.UserCreationDto;
 import com.template.project.models.dtos.UserDto;
+import com.template.project.models.dtos.UserUpdateDto;
 import com.template.project.models.entities.User;
 import com.template.project.service.UserService;
+import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -48,7 +50,7 @@ public class UserController {
   }
 
   @PostMapping
-  public ResponseEntity<UserDto> createUser(@RequestBody UserCreationDto userCreationDto)
+  public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserCreationDto userCreationDto)
       throws UserAlreadyExistsException {
     User createdUser = userService.create(userCreationDto.toEntity());
     UserDto createdUserDto = UserDto.fromEntity(createdUser);
@@ -56,7 +58,10 @@ public class UserController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody UserCreationDto userUpdateDto) throws UserNotFoundException {
+  public ResponseEntity<UserDto> updateUser(
+      @PathVariable Long id,
+      @Valid @RequestBody UserUpdateDto userUpdateDto
+  ) throws UserNotFoundException, UserAlreadyExistsException {
     User updatedUser = userService.update(id, userUpdateDto.toEntity());
     UserDto updatedUserDto = UserDto.fromEntity(updatedUser);
     return ResponseEntity.ok(updatedUserDto);

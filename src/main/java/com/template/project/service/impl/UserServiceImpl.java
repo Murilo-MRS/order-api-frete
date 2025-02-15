@@ -54,13 +54,14 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public User update(Long id, User user) throws UserNotFoundException {
-    Optional<User> userFromDatabase = userRepository.findById(id);
-    if (!userFromDatabase.isPresent()) {
-      throw new UserNotFoundException();
+  public User update(Long id, User user) throws UserNotFoundException, UserAlreadyExistsException {
+    User userFromDatabase = findById(id);
+    Optional<User> checkUserEmail = userRepository.findByEmail(user.getEmail());
+    if (checkUserEmail.isPresent()) {
+      throw new UserAlreadyExistsException();
     }
 
-    User userToUpdate = userFromDatabase.get();
+    User userToUpdate = userFromDatabase;
 
     userToUpdate.setName(user.getName());
     userToUpdate.setEmail(user.getEmail());
