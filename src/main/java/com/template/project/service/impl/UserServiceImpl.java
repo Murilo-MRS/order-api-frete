@@ -1,26 +1,29 @@
 package com.template.project.service.impl;
 
+import com.template.project.exceptions.AccessDeniedException;
 import com.template.project.exceptions.UserAlreadyExistsException;
 import com.template.project.exceptions.UserNotFoundException;
 import com.template.project.models.entities.User;
 import com.template.project.models.repositories.UserRepository;
+import com.template.project.service.TokenService;
 import com.template.project.service.UserService;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserServiceImpl implements UserService, UserDetailsService {
+public class UserServiceImpl implements UserService {
   private final UserRepository userRepository;
+  private final TokenService tokenService;
 
   @Autowired
-  public UserServiceImpl(UserRepository userRepository) {
+  public UserServiceImpl(UserRepository userRepository, TokenService tokenService) {
     this.userRepository = userRepository;
+    this.tokenService = tokenService;
   }
 
   @Override
@@ -61,11 +64,18 @@ public class UserServiceImpl implements UserService, UserDetailsService {
   }
 
   @Override
-  public User update(Long id, User user) throws UserNotFoundException, UserAlreadyExistsException {
+  public User update(Long id, User user, String token)
+      throws UserNotFoundException, UserAlreadyExistsException, AccessDeniedException {
     User userFromDatabase = findById(id);
+
     Optional<User> checkUserEmail = userRepository.findByEmail(user.getEmail());
     if (checkUserEmail.isPresent()) {
       throw new UserAlreadyExistsException();
+    }
+
+    String usernameFromToken = tokenService.validateToken(token);
+    if (!userFromDatabase.getEmail().equals(usernameFromToken)) {
+      throw new AccessDeniedException("Access denied");
     }
 
     User userToUpdate = userFromDatabase;

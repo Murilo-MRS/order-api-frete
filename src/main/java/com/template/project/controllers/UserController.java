@@ -1,7 +1,9 @@
 package com.template.project.controllers;
 
+import com.template.project.exceptions.AccessDeniedException;
 import com.template.project.exceptions.UserAlreadyExistsException;
 import com.template.project.exceptions.UserNotFoundException;
+import com.template.project.models.dtos.UserAdminResponseDto;
 import com.template.project.models.dtos.UserCreationDto;
 import com.template.project.models.dtos.UserDto;
 import com.template.project.models.dtos.UserUpdateDto;
@@ -12,12 +14,14 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,10 +36,11 @@ public class UserController {
   }
 
   @GetMapping
-  public ResponseEntity<List<UserDto>> getUsers() {
-    List<UserDto> users = userService.getAll()
+  @PreAuthorize("hasAnyAuthority('ADMIN')")
+  public ResponseEntity<List<UserAdminResponseDto>> getUsers() {
+    List<UserAdminResponseDto> users = userService.getAll()
         .stream()
-        .map(UserDto::fromEntity)
+        .map(UserAdminResponseDto::fromEntity)
         .toList();
 
     return ResponseEntity.ok(users);
@@ -60,9 +65,12 @@ public class UserController {
   @PutMapping("/{id}")
   public ResponseEntity<UserDto> updateUser(
       @PathVariable Long id,
-      @Valid @RequestBody UserUpdateDto userUpdateDto
-  ) throws UserNotFoundException, UserAlreadyExistsException {
-    User updatedUser = userService.update(id, userUpdateDto.toEntity());
+      @Valid @RequestBody UserUpdateDto userUpdateDto,
+      @RequestHeader("Authorization") String authorizationHeader
+  ) throws UserNotFoundException, UserAlreadyExistsException, AccessDeniedException {
+    String token = authorizationHeader.replace("Bearer ", "");
+
+    User updatedUser = userService.update(id, userUpdateDto.toEntity(), token);
     UserDto updatedUserDto = UserDto.fromEntity(updatedUser);
     return ResponseEntity.ok(updatedUserDto);
   }
