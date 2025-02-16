@@ -37,6 +37,24 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  public User findById(Long id, String token) throws UserNotFoundException, AccessDeniedException {
+    String usernameFromToken = tokenService.validateToken(token);
+    String userRoleFromToken = tokenService.getRoleFromToken(token);
+
+    if (userRoleFromToken.equals("ADMIN")) {
+      return findById(id);
+    }
+
+    User userFromDatabase = findById(id);
+
+    if (!userFromDatabase.getEmail().equals(usernameFromToken)) {
+      throw new AccessDeniedException("Access denied");
+    }
+
+    return userFromDatabase;
+  }
+
+  @Override
   public User findByEmail(String email) throws UserNotFoundException {
     Optional<User> user = userRepository.findByEmail(email);
     if (!user.isPresent()) {
@@ -67,15 +85,16 @@ public class UserServiceImpl implements UserService {
   public User update(Long id, User user, String token)
       throws UserNotFoundException, UserAlreadyExistsException, AccessDeniedException {
     User userFromDatabase = findById(id);
-
-    Optional<User> checkUserEmail = userRepository.findByEmail(user.getEmail());
-    if (checkUserEmail.isPresent()) {
-      throw new UserAlreadyExistsException();
-    }
+    boolean isEmailInUse = userRepository.findByEmail(user.getEmail()).isPresent();
+    boolean isEmailSameAsBefore = userFromDatabase.getEmail().equals(user.getEmail());
 
     String usernameFromToken = tokenService.validateToken(token);
     if (!userFromDatabase.getEmail().equals(usernameFromToken)) {
       throw new AccessDeniedException("Access denied");
+    }
+
+    if (isEmailInUse && !isEmailSameAsBefore) {
+      throw new UserAlreadyExistsException();
     }
 
     User userToUpdate = userFromDatabase;
@@ -83,17 +102,19 @@ public class UserServiceImpl implements UserService {
     userToUpdate.setName(user.getName());
     userToUpdate.setEmail(user.getEmail());
     userToUpdate.setPassword(user.getPassword());
-    userToUpdate.setRole(user.getRole());
 
     return userRepository.save(userToUpdate);
   }
 
   @Override
-  public void delete(Long id) throws UserNotFoundException {
-    Optional<User> userFromDatabase = userRepository.findById(id);
-    if (!userFromDatabase.isPresent()) {
-      throw new UserNotFoundException();
+  public void delete(Long id, String token) throws UserNotFoundException, AccessDeniedException {
+    User userFromDatabase = findById(id);
+
+    String usernameFromToken = tokenService.validateToken(token);
+    if (!userFromDatabase.getEmail().equals(usernameFromToken)) {
+      throw new AccessDeniedException("Access denied");
     }
+
     userRepository.deleteById(id);
   }
 
@@ -101,6 +122,5 @@ public class UserServiceImpl implements UserService {
   public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
     return userRepository.findByEmail(email)
         .orElseThrow(() -> new UsernameNotFoundException(email));
-
   }
 }

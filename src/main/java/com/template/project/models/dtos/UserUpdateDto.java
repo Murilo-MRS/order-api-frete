@@ -17,12 +17,9 @@ public record UserUpdateDto(
     String email, 
     @NotNull(message = "Password is required")
     @Size(min = 6, max = 255, message = "Password must be between 6 and 255 characters")
-    String password,
-    @NotNull(message = "Role is required")
-    @ValueOfEnum(enumClass = Role.class, message = "Role must be valid")
-    String role
+    String password
 ) {
   public User toEntity() {
-    return new User(null, name, email, password, Role.valueOf(role));
+    return new User(null, name, email, password, null);
   }
 }

@@ -47,8 +47,12 @@ public class UserController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<UserDto> getUser(@PathVariable Long id) throws UserNotFoundException {
-    User user = userService.findById(id);
+  public ResponseEntity<UserDto> getUser(
+      @PathVariable Long id,
+      @RequestHeader("Authorization") String authorizationHeader
+      ) throws UserNotFoundException, AccessDeniedException {
+    String token = authorizationHeader.replace("Bearer ", "");
+    User user = userService.findById(id, token);
     UserDto userDto = UserDto.fromEntity(user);
 
     return ResponseEntity.ok(userDto);
@@ -76,8 +80,9 @@ public class UserController {
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteUser(@PathVariable Long id) throws UserNotFoundException {
-    userService.delete(id);
+  public ResponseEntity<Void> deleteUser(@PathVariable Long id, @RequestHeader("Authorization") String authorizationHeader) throws UserNotFoundException, AccessDeniedException {
+    String token = authorizationHeader.replace("Bearer ", "");
+    userService.delete(id, token);
     return ResponseEntity.noContent().build();
   }
 }
