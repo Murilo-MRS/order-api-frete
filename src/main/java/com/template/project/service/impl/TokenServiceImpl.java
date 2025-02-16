@@ -2,10 +2,10 @@ package com.template.project.service.impl;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.template.project.models.enums.Role;
 import com.template.project.service.TokenService;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +17,22 @@ public class TokenServiceImpl implements TokenService {
     this.algorithm = Algorithm.HMAC256(secret);
   }
 
+
   @Override
-  public String generateToken(String username) {
+  public String generateToken(String username, String role) {
     return JWT.create()
         .withSubject(username)
+        .withClaim("role", role)
         .withExpiresAt(generateExpiration())
         .sign(algorithm);
+  }
+
+  public String getRoleFromToken(String token) {
+    return JWT.require(algorithm)
+        .build()
+        .verify(token)
+        .getClaim("role")
+        .asString();
   }
 
   @Override

@@ -30,7 +30,8 @@ public class AuthenticationController {
     UsernamePasswordAuthenticationToken usernamePassword =
         new UsernamePasswordAuthenticationToken(loginDto.email(), loginDto.password());
     Authentication authenticate = authenticationManager.authenticate(usernamePassword);
-    String token = tokenService.generateToken(authenticate.getName());
+    String role = authenticate.getAuthorities().iterator().next().getAuthority();
+    String token = tokenService.generateToken(authenticate.getName(), role);
 
     return ResponseEntity.ok(new TokenDto(token));
   }
