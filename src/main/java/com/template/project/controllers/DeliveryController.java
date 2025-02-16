@@ -1,12 +1,12 @@
 package com.template.project.controllers;
 
+import com.template.project.exceptions.AccessDeniedException;
 import com.template.project.exceptions.DeliveryNotFoundException;
 import com.template.project.exceptions.UserNotFoundException;
 import com.template.project.models.dtos.DeliveryCreationDto;
 import com.template.project.models.dtos.DeliveryDto;
 import com.template.project.models.dtos.DeliveryUpdateDto;
 import com.template.project.models.dtos.DeliveryUpdateStatusDto;
-import com.template.project.models.dtos.UserDeliveryDto;
 import com.template.project.models.entities.Delivery;
 import com.template.project.service.DeliveryService;
 import jakarta.validation.Valid;
@@ -14,12 +14,14 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,8 +36,10 @@ public class DeliveryController {
   }
 
   @GetMapping
-  public ResponseEntity<List<DeliveryDto>> getDeliveries() {
-    List<Delivery> deliveries = deliveryService.getAll();
+  public ResponseEntity<List<DeliveryDto>> getDeliveries(@RequestHeader("Authorization") String authorizationHeader)
+      throws AccessDeniedException, UserNotFoundException {
+    String token = authorizationHeader.replace("Bearer ", "");
+    List<Delivery> deliveries = deliveryService.getAll(token);
     List<DeliveryDto> deliveryDtos = deliveries.stream()
         .map(DeliveryDto::fromEntity)
         .toList();
@@ -44,13 +48,16 @@ public class DeliveryController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<DeliveryDto> getDelivery(@PathVariable Long id) throws DeliveryNotFoundException {
-    DeliveryDto delivery = DeliveryDto.fromEntity(deliveryService.findById(id));
+  public ResponseEntity<DeliveryDto> getDelivery(@PathVariable Long id, @RequestHeader("Authorization") String authorizationHeader) throws DeliveryNotFoundException, AccessDeniedException {
+    String token = authorizationHeader.replace("Bearer ", "");
+
+    DeliveryDto delivery = DeliveryDto.fromEntity(deliveryService.findById(id, token));
 
     return ResponseEntity.ok(delivery);
   }
 
   @PostMapping
+  @PreAuthorize("hasAnyAuthority('ADMIN')")
   public ResponseEntity<DeliveryDto> createDelivery(@Valid @RequestBody DeliveryCreationDto deliveryCreationDto) {
     Delivery createdDelivery = deliveryService.create(deliveryCreationDto.toEntity());
     DeliveryDto createdDeliveryDto = DeliveryDto.fromEntity(createdDelivery);
@@ -59,6 +66,7 @@ public class DeliveryController {
   }
 
   @PutMapping("/{id}")
+  @PreAuthorize("hasAnyAuthority('ADMIN')")
   public ResponseEntity<DeliveryDto> updateDelivery(@PathVariable Long id, @Valid @RequestBody DeliveryUpdateDto deliveryUpdateDto)
       throws DeliveryNotFoundException, UserNotFoundException {
     Delivery updatedDelivery = deliveryService.update(id,  deliveryUpdateDto.userId(), deliveryUpdateDto.toEntity());
@@ -68,18 +76,21 @@ public class DeliveryController {
   }
 
   @PutMapping("/{id}/status")
-  public ResponseEntity<DeliveryDto> updateDeliveryStatus(@PathVariable Long id,
-      @Valid @RequestBody DeliveryUpdateStatusDto updateStatusDto)
-      throws DeliveryNotFoundException {
-
+  public ResponseEntity<DeliveryDto> updateDeliveryStatus(
+      @PathVariable Long id,
+      @Valid @RequestBody DeliveryUpdateStatusDto updateStatusDto,
+      @RequestHeader("Authorization") String authorizationHeader
+  ) throws DeliveryNotFoundException, AccessDeniedException {
+    String token = authorizationHeader.replace("Bearer ", "");
     Delivery updatedDelivery = deliveryService.updateDeliveryStatus(id, updateStatusDto.toEntity()
-        .getStatus());
+          .getStatus(), token);
     DeliveryDto updatedDeliveryDto = DeliveryDto.fromEntity(updatedDelivery);
 
     return ResponseEntity.ok(updatedDeliveryDto);
   }
 
   @DeleteMapping("/{id}")
+  @PreAuthorize("hasAnyAuthority('ADMIN')")
   public ResponseEntity<Void> deleteDelivery(@PathVariable Long id) throws DeliveryNotFoundException {
     deliveryService.delete(id);
     return ResponseEntity.noContent().build();
