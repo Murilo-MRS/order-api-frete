@@ -101,7 +101,9 @@ public class UserServiceImpl implements UserService {
 
     userToUpdate.setName(user.getName());
     userToUpdate.setEmail(user.getEmail());
-    userToUpdate.setPassword(user.getPassword());
+    String hashedPassword = new BCryptPasswordEncoder()
+        .encode(user.getPassword());
+    userToUpdate.setPassword(hashedPassword);
 
     return userRepository.save(userToUpdate);
   }
@@ -109,9 +111,16 @@ public class UserServiceImpl implements UserService {
   @Override
   public void delete(Long id, String token) throws UserNotFoundException, AccessDeniedException {
     User userFromDatabase = findById(id);
-
     String usernameFromToken = tokenService.validateToken(token);
-    if (!userFromDatabase.getEmail().equals(usernameFromToken)) {
+    boolean isUserSameAsToken = userFromDatabase.getEmail().equals(usernameFromToken);
+    boolean isUserAdmin = tokenService.getRoleFromToken(token).equals("ADMIN");
+
+    if (isUserAdmin) {
+      userRepository.deleteById(id);
+      return;
+    }
+
+    if (!isUserSameAsToken) {
       throw new AccessDeniedException("Access denied");
     }
 
