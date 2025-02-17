@@ -2,7 +2,6 @@ package com.template.project.service;
 
 import com.template.project.exceptions.UserNotFoundException;
 import com.template.project.models.entities.User;
-import com.template.project.models.enums.Role;
 import java.time.Instant;
 
 public interface TokenService {

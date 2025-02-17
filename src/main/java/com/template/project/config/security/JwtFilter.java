@@ -39,11 +39,11 @@ public class JwtFilter extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-      FilterChain filterChain) throws ServletException, IOException {
+    FilterChain filterChain) throws ServletException, IOException {
     Optional<String> token = extractToken(request);
-
     if (token.isPresent()) {
-      String subject = tokenService.validateToken(token.get());
+      String subject = null;
+        subject = tokenService.validateToken(token.get());
 
       UserDetails userDetails = userService.loadUserByUsername(subject);
 

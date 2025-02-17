@@ -15,10 +15,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class TokenServiceImpl implements TokenService {
+
   private final Algorithm algorithm;
   private final UserRepository userRepository;
 
-  public TokenServiceImpl(@Value("${api.security.token.secret}") String secret, UserRepository userRepository) {
+  public TokenServiceImpl(@Value("${api.security.token.secret}") String secret,
+      UserRepository userRepository) {
     this.algorithm = Algorithm.HMAC256(secret);
     this.userRepository = userRepository;
   }

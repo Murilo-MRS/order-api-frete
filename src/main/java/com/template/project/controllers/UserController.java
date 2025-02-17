@@ -57,11 +57,8 @@ public class UserController {
   @GetMapping("/{id}")
   @Operation(summary = "Buscar usuário por ID")
   @SecurityRequirement(name = "Bearer Authentication")
-  public ResponseEntity<UserDto> getUser(
-      @PathVariable Long id,
-      @RequestHeader("Authorization") String authorizationHeader
-      ) throws UserNotFoundException, AccessDeniedException {
-    String token = authorizationHeader.replace("Bearer ", "");
+  public ResponseEntity<UserDto> getUser(@PathVariable Long id)
+      throws UserNotFoundException, AccessDeniedException {
     User user = userService.findById(id);
     UserDto userDto = UserDto.fromEntity(user);
 
@@ -82,11 +79,8 @@ public class UserController {
   @SecurityRequirement(name = "Bearer Authentication")
   public ResponseEntity<UserDto> updateUser(
       @PathVariable Long id,
-      @Valid @RequestBody UserUpdateDto userUpdateDto,
-      @RequestHeader("Authorization") String authorizationHeader
+      @Valid @RequestBody UserUpdateDto userUpdateDto
   ) throws UserNotFoundException, UserAlreadyExistsException, AccessDeniedException {
-    String token = authorizationHeader.replace("Bearer ", "");
-
     User updatedUser = userService.update(id, userUpdateDto.toEntity());
     UserDto updatedUserDto = UserDto.fromEntity(updatedUser);
     return ResponseEntity.ok(updatedUserDto);
@@ -96,7 +90,10 @@ public class UserController {
   @PreAuthorize("hasAnyAuthority('ADMIN')")
   @Operation(summary = "Adicionar entrega ao usuário")
   @SecurityRequirement(name = "Bearer Authentication")
-  public ResponseEntity<UserDeliveryListDto> addDelivery(@PathVariable Long id, @PathVariable Long deliveryId) throws UserNotFoundException, DeliveryNotFoundException {
+  public ResponseEntity<UserDeliveryListDto> addDelivery(
+      @PathVariable Long id, @PathVariable Long deliveryId
+  )
+      throws UserNotFoundException, DeliveryNotFoundException {
     User user = userService.addDelivery(id, deliveryId);
     UserDeliveryListDto userDeliveryListDto = UserDeliveryListDto.fromEntity(user);
     return ResponseEntity.ok(userDeliveryListDto);
@@ -105,8 +102,8 @@ public class UserController {
   @DeleteMapping("/{id}")
   @Operation(summary = "Deletar usuário")
   @SecurityRequirement(name = "Bearer Authentication")
-  public ResponseEntity<Void> deleteUser(@PathVariable Long id, @RequestHeader("Authorization") String authorizationHeader) throws UserNotFoundException, AccessDeniedException {
-    String token = authorizationHeader.replace("Bearer ", "");
+  public ResponseEntity<Void> deleteUser(@PathVariable Long id)
+      throws UserNotFoundException, AccessDeniedException {
     userService.delete(id);
     return ResponseEntity.noContent().build();
   }
