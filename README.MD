@@ -19,17 +19,6 @@ erDiagram
         LocalDateTime createdAt
         LocalDateTime updatedAt
     }
-    Role {
-        <<enumeration>>
-        ADMIN
-        USER
-    }
-    DeliveryStatus {
-        <<enumeration>>
-        PENDING
-        IN_TRANSIT
-        DELIVERED
-    }
-    User ||--o{ Delivery : "has"
+    User ||--o{ Delivery : "contains"
     Delivery ||--o{ User : "has"
 ```
