@@ -1,13 +1,18 @@
 package com.template.project.service.impl;
 
 import com.template.project.exceptions.AccessDeniedException;
+import com.template.project.exceptions.DeliveryNotFoundException;
 import com.template.project.exceptions.UserAlreadyExistsException;
 import com.template.project.exceptions.UserNotFoundException;
+import com.template.project.models.entities.Delivery;
 import com.template.project.models.entities.User;
+import com.template.project.models.repositories.DeliveryRepository;
 import com.template.project.models.repositories.UserRepository;
+import com.template.project.service.DeliveryService;
 import com.template.project.service.TokenService;
 import com.template.project.service.UserService;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,11 +23,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserServiceImpl implements UserService {
   private final UserRepository userRepository;
+  private final DeliveryRepository deliveryRepository;
   private final TokenService tokenService;
 
   @Autowired
-  public UserServiceImpl(UserRepository userRepository, TokenService tokenService) {
+  public UserServiceImpl(UserRepository userRepository, DeliveryRepository deliveryRepository, TokenService tokenService) {
     this.userRepository = userRepository;
+    this.deliveryRepository = deliveryRepository;
     this.tokenService = tokenService;
   }
 
@@ -125,6 +132,16 @@ public class UserServiceImpl implements UserService {
     }
 
     userRepository.deleteById(id);
+  }
+
+  public User addDelivery(Long userId, Long deliveryId) throws UserNotFoundException, DeliveryNotFoundException {
+    User user = findById(userId);
+    Delivery delivery = deliveryRepository.findById(deliveryId)
+        .orElseThrow(DeliveryNotFoundException::new);
+
+    user.addDelivery(delivery);
+
+    return userRepository.save(user);
   }
 
   @Override

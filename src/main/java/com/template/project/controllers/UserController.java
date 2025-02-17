@@ -1,10 +1,12 @@
 package com.template.project.controllers;
 
 import com.template.project.exceptions.AccessDeniedException;
+import com.template.project.exceptions.DeliveryNotFoundException;
 import com.template.project.exceptions.UserAlreadyExistsException;
 import com.template.project.exceptions.UserNotFoundException;
 import com.template.project.models.dtos.UserAdminResponseDto;
 import com.template.project.models.dtos.UserCreationDto;
+import com.template.project.models.dtos.UserDeliveryListDto;
 import com.template.project.models.dtos.UserDto;
 import com.template.project.models.dtos.UserUpdateDto;
 import com.template.project.models.entities.User;
@@ -77,6 +79,14 @@ public class UserController {
     User updatedUser = userService.update(id, userUpdateDto.toEntity(), token);
     UserDto updatedUserDto = UserDto.fromEntity(updatedUser);
     return ResponseEntity.ok(updatedUserDto);
+  }
+
+  @PostMapping("/{id}/delivery/{deliveryId}")
+  @PreAuthorize("hasAnyAuthority('ADMIN')")
+  public ResponseEntity<UserDeliveryListDto> addDelivery(@PathVariable Long id, @PathVariable Long deliveryId) throws UserNotFoundException, DeliveryNotFoundException {
+    User user = userService.addDelivery(id, deliveryId);
+    UserDeliveryListDto userDeliveryListDto = UserDeliveryListDto.fromEntity(user);
+    return ResponseEntity.ok(userDeliveryListDto);
   }
 
   @DeleteMapping("/{id}")

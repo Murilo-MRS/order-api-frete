@@ -1,6 +1,7 @@
 package com.template.project.models.entities;
 
 import com.template.project.models.enums.Role;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -47,7 +48,10 @@ public class User implements UserDetails {
   @LastModifiedDate
   private LocalDateTime updatedAt;
 
-  @OneToMany(mappedBy = "user")
+  @OneToMany(
+      mappedBy = "user",
+      cascade = CascadeType.ALL
+  )
   private List<Delivery> deliveries = new ArrayList<>();
 
   public User() {
@@ -108,7 +112,17 @@ public class User implements UserDetails {
   public List<Delivery> getDeliveries() {
     return deliveries;
   }
+  public Delivery addDelivery(Delivery delivery) {
+    deliveries.add(delivery);
+    delivery.setUser(this);
+    return delivery;
+  }
 
+  public Delivery removeDelivery(Delivery delivery) {
+    deliveries.remove(delivery);
+    delivery.setUser(null);
+    return delivery;
+  }
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return List.of(new SimpleGrantedAuthority(role.toString()));

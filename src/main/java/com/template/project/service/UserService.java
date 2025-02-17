@@ -1,6 +1,7 @@
 package com.template.project.service;
 
 import com.template.project.exceptions.AccessDeniedException;
+import com.template.project.exceptions.DeliveryNotFoundException;
 import com.template.project.exceptions.UserAlreadyExistsException;
 import com.template.project.exceptions.UserNotFoundException;
 import com.template.project.models.entities.User;
@@ -15,5 +16,6 @@ public interface UserService extends UserDetailsService {
   User create(User user) throws UserAlreadyExistsException;
   User update(Long id, User user, String token)
       throws UserNotFoundException, UserAlreadyExistsException, AccessDeniedException;
+  User addDelivery(Long userId, Long deliveryId) throws UserNotFoundException, DeliveryNotFoundException;
   void delete(Long id, String token) throws UserNotFoundException, AccessDeniedException;
 }
