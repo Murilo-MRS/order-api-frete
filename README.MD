@@ -1,4 +1,4 @@
-# 🌿 Projeto Agrix :seedling:
+# :truck: Desafio Técnico Backend Spring Boot - Frete Mais
 
 ## 📃 Descrição
 Este projeto é uma aplicação de gerenciamento de Entregas e Usuários, onde é possível cadastrar, listar, atualizar e deletar Entregas e Usuários.
