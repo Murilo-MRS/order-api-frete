@@ -8,11 +8,13 @@ import com.template.project.models.enums.DeliveryStatus;
 import java.util.List;
 
 public interface DeliveryService {
-  List<Delivery> getAll(String token) throws AccessDeniedException, UserNotFoundException;
-  Delivery findById(Long id) throws DeliveryNotFoundException;
-  Delivery findById(Long id, String token) throws DeliveryNotFoundException, AccessDeniedException;
+  List<Delivery> getAll() throws AccessDeniedException, UserNotFoundException;
+  Delivery findById(Long id)
+      throws DeliveryNotFoundException, AccessDeniedException, UserNotFoundException;
   Delivery create(Delivery delivery);
-  Delivery update(Long id, Long userId, Delivery delivery) throws DeliveryNotFoundException, UserNotFoundException;
-  Delivery updateDeliveryStatus(Long id, DeliveryStatus status, String token) throws DeliveryNotFoundException, AccessDeniedException;
+  Delivery update(Long id, Long userId, Delivery delivery)
+      throws DeliveryNotFoundException, UserNotFoundException, AccessDeniedException;
+  Delivery updateDeliveryStatus(Long id, DeliveryStatus status)
+      throws DeliveryNotFoundException, AccessDeniedException, UserNotFoundException;
   void delete(Long id) throws DeliveryNotFoundException;
 }

@@ -3,6 +3,8 @@ package com.template.project.controllers;
 import com.template.project.models.dtos.LoginDto;
 import com.template.project.models.dtos.TokenDto;
 import com.template.project.service.TokenService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Autenticação")
 public class AuthenticationController {
   private final AuthenticationManager authenticationManager;
   private final TokenService tokenService;
@@ -26,6 +29,7 @@ public class AuthenticationController {
   }
 
   @PostMapping("/login")
+  @Operation(summary = "Login")
   public ResponseEntity<TokenDto> login(@RequestBody LoginDto loginDto) {
     UsernamePasswordAuthenticationToken usernamePassword =
         new UsernamePasswordAuthenticationToken(loginDto.email(), loginDto.password());

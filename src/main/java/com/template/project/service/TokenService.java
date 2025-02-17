@@ -1,11 +1,17 @@
 package com.template.project.service;
 
+import com.template.project.exceptions.UserNotFoundException;
+import com.template.project.models.entities.User;
 import com.template.project.models.enums.Role;
 import java.time.Instant;
 
 public interface TokenService {
   String generateToken(String username, String role);
-  String getRoleFromToken(String token);
+
+  String getRoleFromToken();
+
+  User getUser() throws UserNotFoundException;
+
   Instant generateExpiration();
   String validateToken(String token);
 }

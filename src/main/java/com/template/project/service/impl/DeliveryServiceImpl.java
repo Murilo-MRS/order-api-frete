@@ -11,9 +11,7 @@ import com.template.project.service.DeliveryService;
 import com.template.project.service.TokenService;
 import com.template.project.service.UserService;
 import java.time.LocalDateTime;
-import java.util.IllegalFormatCodePointException;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,29 +30,20 @@ public class DeliveryServiceImpl implements DeliveryService {
 
   @Override
   public Delivery findById(Long id)
-      throws DeliveryNotFoundException {
+      throws DeliveryNotFoundException, UserNotFoundException, AccessDeniedException {
+    User usernameFromToken = tokenService.getUser();
+    String userRoleFromToken = tokenService.getRoleFromToken();
 
-    Optional<Delivery> delivery = deliveryRepository.findById(id);
-
-    if (!delivery.isPresent()) {
-      throw new DeliveryNotFoundException();
-    }
-
-    return delivery.get();
-  }
-
-  @Override
-  public Delivery findById(Long id, String token)
-      throws DeliveryNotFoundException, AccessDeniedException {
-    String usernameFromToken = tokenService.validateToken(token);
-    String userRoleFromToken = tokenService.getRoleFromToken(token);
 
     if (userRoleFromToken.equals("ADMIN")) {
-      return findById(id);
+      return deliveryRepository.findById(id)
+          .orElseThrow(DeliveryNotFoundException::new);
     }
-    Delivery delivery = findById(id);
+    Delivery delivery = deliveryRepository.findById(id)
+        .orElseThrow(DeliveryNotFoundException::new);
 
-    boolean isDeliveryOwner = delivery.getUser() != null && delivery.getUser().getEmail().equals(usernameFromToken);
+    boolean isDeliveryOwner = delivery.getUser() != null && delivery.getUser().getEmail()
+        .equals(usernameFromToken.getEmail());
 
     if (!isDeliveryOwner) {
       throw new AccessDeniedException("Access denied");
@@ -64,9 +53,9 @@ public class DeliveryServiceImpl implements DeliveryService {
   }
 
   @Override
-  public List<Delivery> getAll(String token) throws AccessDeniedException, UserNotFoundException {
-    boolean isAdmin = tokenService.getRoleFromToken(token).equals("ADMIN");
-    String usernameFromToken = tokenService.validateToken(token);
+  public List<Delivery> getAll() throws AccessDeniedException, UserNotFoundException {
+    boolean isAdmin = tokenService.getRoleFromToken().equals("ADMIN");
+    String usernameFromToken = tokenService.getUser().getEmail();
 
     if (isAdmin) {
       return deliveryRepository.findAll();
@@ -86,7 +75,7 @@ public class DeliveryServiceImpl implements DeliveryService {
 
   @Override
   public Delivery update(Long id, Long userId, Delivery delivery)
-      throws DeliveryNotFoundException, UserNotFoundException {
+      throws DeliveryNotFoundException, UserNotFoundException, AccessDeniedException {
     Delivery dataBaseDelivery = deliveryRepository.findById(id)
         .orElseThrow(DeliveryNotFoundException::new);
 
@@ -125,11 +114,12 @@ public class DeliveryServiceImpl implements DeliveryService {
   }
 
   @Override
-  public Delivery updateDeliveryStatus(Long id, DeliveryStatus status, String token)
-      throws DeliveryNotFoundException, AccessDeniedException {
-    String usernameFromToken = tokenService.validateToken(token);
-    boolean isAdmin = tokenService.getRoleFromToken(token).equals("ADMIN");
-    Delivery delivery = findById(id);
+  public Delivery updateDeliveryStatus(Long id, DeliveryStatus status)
+      throws DeliveryNotFoundException, AccessDeniedException, UserNotFoundException {
+    String usernameFromToken = tokenService.getUser().getEmail();
+    boolean isAdmin = tokenService.getRoleFromToken().equals("ADMIN");
+    Delivery delivery = deliveryRepository.findById(id)
+        .orElseThrow(DeliveryNotFoundException::new);
     boolean isDeliveryOwner = delivery.getUser() != null && delivery.getUser().getEmail().equals(usernameFromToken);
 
     if (isAdmin) {
@@ -157,7 +147,8 @@ public class DeliveryServiceImpl implements DeliveryService {
 
   @Override
   public void delete(Long id) throws DeliveryNotFoundException {
-    Delivery delivery = findById(id);
+    Delivery delivery = deliveryRepository.findById(id)
+        .orElseThrow(DeliveryNotFoundException::new);
     deliveryRepository.deleteById(delivery.getId());
   }
 }

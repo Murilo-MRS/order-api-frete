@@ -9,13 +9,12 @@ import java.util.List;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface UserService extends UserDetailsService {
-  User findById(Long id, String token) throws UserNotFoundException, AccessDeniedException;
-  User findById(Long id) throws UserNotFoundException;
+  User findById(Long id) throws UserNotFoundException, AccessDeniedException;
   User findByEmail(String email) throws UserNotFoundException;
   List<User> getAll();
   User create(User user) throws UserAlreadyExistsException;
-  User update(Long id, User user, String token)
+  User update(Long id, User user)
       throws UserNotFoundException, UserAlreadyExistsException, AccessDeniedException;
   User addDelivery(Long userId, Long deliveryId) throws UserNotFoundException, DeliveryNotFoundException;
-  void delete(Long id, String token) throws UserNotFoundException, AccessDeniedException;
+  void delete(Long id) throws UserNotFoundException, AccessDeniedException;
 }
